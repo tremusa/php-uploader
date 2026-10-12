@@ -1,0 +1,41 @@
+name: Build Papirus SVG transfer ZIP
+
+on:
+  push:
+    branches:
+      - papirus-svg-transfer-20261012
+
+permissions:
+  contents: write
+
+jobs:
+  pack:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout transfer branch
+        uses: actions/checkout@v4
+
+      - name: Clone Papirus source
+        run: |
+          git clone --depth 1 --branch master https://github.com/PapirusDevelopmentTeam/papirus_icons.git /tmp/papirus_icons
+
+      - name: Pack SVG files
+        run: |
+          cd /tmp/papirus_icons
+          COUNT=$(find src -type f -iname '*.svg' | wc -l)
+          echo "$COUNT" > "$GITHUB_WORKSPACE/Papirus-src-SVG-count.txt"
+          find src -type f -iname '*.svg' -print0 | sort -z | xargs -0 zip -9 "$GITHUB_WORKSPACE/Papirus-src-SVG-icons.zip"
+          cd "$GITHUB_WORKSPACE"
+          sha256sum Papirus-src-SVG-icons.zip > Papirus-src-SVG-icons.sha256
+          ls -lh Papirus-src-SVG-icons.zip
+          cat Papirus-src-SVG-count.txt
+          cat Papirus-src-SVG-icons.sha256
+
+      - name: Commit transfer files
+        run: |
+          git config user.name "Tremu Build Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add Papirus-src-SVG-icons.zip Papirus-src-SVG-count.txt Papirus-src-SVG-icons.sha256
+          git commit -m "Add Papirus SVG transfer package [skip ci]"
+          git push origin HEAD:papirus-svg-transfer-20261012
