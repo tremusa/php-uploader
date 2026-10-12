@@ -32,6 +32,16 @@ jobs:
           cat Papirus-src-SVG-count.txt
           cat Papirus-src-SVG-icons.sha256
 
+      - name: Upload transfer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: papirus-src-svg-icons
+          path: |
+            Papirus-src-SVG-icons.zip
+            Papirus-src-SVG-count.txt
+            Papirus-src-SVG-icons.sha256
+          retention-days: 1
+
       - name: Commit transfer files
         run: |
           git config user.name "Tremu Build Bot"
